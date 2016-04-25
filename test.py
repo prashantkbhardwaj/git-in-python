@@ -98,6 +98,8 @@ elif argument == "add":
 
 elif argument == "commit":
 
+        repo = pickle.load(fo)
+        reoi()
         repo = Git()
         
         repo.commit('Hello World')
@@ -124,4 +126,18 @@ elif argument == "commit":
        
         pickle.dump(repo, fo)
         
+elif argument == "dump"
+        repo = Git()
+
+        # To dump the object
+        fo = open("checking.txt", "wb")
+
+        pickle.dump(repo, fo)
+
+        # To load the object back
+        fo = open("checking.txt", "r+")
+
+        repo = pickle.load(fo)
+
+        # Now repo.commit("Hello World") will work. It will have previous objects too
         
