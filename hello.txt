@@ -1,0 +1,35 @@
+Testing diffccopy_reg
+_reconstructor
+p0
+(c__main__
+Git
+p1
+c__builtin__
+object
+p2
+Ntp3
+Rp4
+(dp5
+S'HEAD'
+p6
+g0
+(c__main__
+Commit
+p7
+g2
+Ntp8
+Rp9
+(dp10
+S'commitId'
+p11
+I0
+sS'message'
+p12
+S'Hello World'
+p13
+sS'parent'
+p14
+NsbsS'lastcommitId'
+p15
+I0
+sb.
