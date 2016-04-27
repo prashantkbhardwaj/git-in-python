@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import os
 import sys
 import pickle
@@ -14,11 +15,11 @@ class Commit(object):
                 self.parent = parent
                 self.message = message
 
-                fo = open(".gitpy/addinfo.txt", "r+")
+                fo = open(".gitpy/dump/addinfo.txt", "r+")
                 change = fo.read()
                 change = change.splitlines()
 
-                print change
+                
 
 		if not os.path.exists('.gitpy/' + str(self.commitId)):
                     os.makedirs(".gitpy/" + str(self.commitId))
@@ -28,15 +29,6 @@ class Commit(object):
                                 copyfile(os.getcwd()+ "/" + i, os.getcwd()+ "/.gitpy/" + str(self.commitId) + "/" + i)
 
                 
-
-class Branch(object):
-
-        def __init__(self, name, commit):
-                self.name = name
-                self.commit = commit
-
-
-
 class Git(object):
 
         def __init__(self):
@@ -72,72 +64,125 @@ elif len(sys.argv) == 4:
         message = sys.argv[3]
 
 
+files_in_cwd = os.listdir(os.getcwd())
+
+if os.path.exists('.gitpy/'):
+        files_in_gitpy = os.listdir(os.getcwd() + "/.gitpy")
+
+        
+
 if argument == "init":
         if not os.path.exists('.gitpy'):
                 os.makedirs('.gitpy')
-                print "Initialized an empty repositoru in the current working directory"
-
-                files_in_cwd = os.listdir(os.getcwd())
-                files_in_gitpy = os.listdir(os.getcwd() + "/.gitpy")
-
+                print "Initialized an empty repository in " + os.getcwd()
         else:
                 print "Already Exists"
 
+        repo = Git()
+        os.makedirs('.gitpy/dump')
+        fo = open(".gitpy/dump/dump.txt", "wb")
+        pickle.dump(repo, fo)
+        
+
 elif argument == "add":
 
-        files_in_cwd = os.listdir(os.getcwd())
-        files_in_gitpy = os.listdir(os.getcwd() + "/.gitpy")
+        fo = open(".gitpy/dump/dump.txt", "r")
+        repo = pickle.load(fo)
 
         if specific:
                 if specific == "-A" or specific == "-a":
-                        fo = open(".gitpy/addinfo.txt", "wb")
+                        fo = open(".gitpy/dump/addinfo.txt", "wb")
 
-                        for untracked in files_in_cwd:
-                                if untracked not in files_in_gitpy and untracked !=".gitpy":
-                                        fo.write(untracked + "\n")
+                        for untracked in files_in_cwd: 
+                                if not os.path.isdir(os.getcwd()+ "/" + untracked) and untracked!="test.py":
+                                        if untracked not in files_in_gitpy:
+                                                fo.write(untracked + "\n")
 
 elif argument == "commit":
 
+        fo = open(".gitpy/dump/dump.txt", "r")
         repo = pickle.load(fo)
-        reoi()
-        repo = Git()
-        
-        repo.commit('Hello World')
-
-        fo = open("hello.txt", "wb")
-        fo.write("Testing diff")
         fo.close()
 
-        fo = open("hello.txt", "r+")
-        string1 = fo.read()
-        string1 = string1.splitlines()
+        try:
+                specific
+        except NameError:
+                print "Provide a message!"
+        else:
+                repo.commit(specific)
         
-        fi = open(".gitpy/" + str(repo.HEAD.commitId) + "/hello.txt")
-        string2 = fo.read()
-        string2 = string2.splitlines()
+        fo = open(".gitpy/dump/dump.txt", "wb")
+        pickle.dump(repo,fo)
+        fo.close()
         
-        diff = difflib.unified_diff(string2, string1, lineterm='')
-        print '\n'.join(list(diff))
-        
+elif argument == "diff":
 
-        
+        fo = open(".gitpy/dump/dump.txt", "r")
+        repo = pickle.load(fo)
+        fo.close()
+
+        if repo.HEAD:
+
+                try:
+                        specific
+                except NameError:
+
+                        for i in files_in_cwd:
+                                if not os.path.isdir(os.getcwd()+ "/" + i) and i!="test.py":
+                                        fo = open(i, "r+")
+                                        string1 = fo.read()
+                                        string1 = string1.splitlines()                                       
+                                        
+                                        fi = open(".gitpy/" + str(repo.HEAD.commitId) + "/" + i, "r+")
+                                        string2 = fi.read()
+                                        string2 = string2.splitlines()
+
+                                        if string1 != string2:
+                                                print 'Printing diff for file:' + i
+                                                diff = difflib.unified_diff(string2, string1, lineterm='')
+                                                print '\n'.join(list(diff))
+                                                print '\n\n\n'
+
+                                                
+
+                                       
+
+                                
+                else:
+                        fo = open(specific, "r+")
+                        string1 = fo.read()
+                        string1 = string1.splitlines()
+
+                        fi = open(".gitpy/" + str(repo.HEAD.commitId) + "/" + specific)
+                        string2 = fo.read()
+                        string2 = string2.splitlines()
+
+                        diff = difflib.unified_diff(string2, string1, lineterm='')
+                        print '\n'.join(list(diff))
+                        print '\n\n\n'
+
+
+               
+        else:
+                print "Cannot compare since no commits in place"
+
+
+elif argument == "log":
+
+        fo = open(".gitpy/dump/dump.txt", "r")
+        repo = pickle.load(fo)
+        fo.close()
+
         print repo.log()
 
-       
-        pickle.dump(repo, fo)
+else:
+        print "No recognized argument!"
         
-elif argument == "dump"
-        repo = Git()
+                
+                
+                
 
-        # To dump the object
-        fo = open("checking.txt", "wb")
 
-        pickle.dump(repo, fo)
 
-        # To load the object back
-        fo = open("checking.txt", "r+")
-
-        repo = pickle.load(fo)
-
-        # Now repo.commit("Hello World") will work. It will have previous objects too
+        
         
