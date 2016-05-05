@@ -14,20 +14,6 @@ class Commit(object):
                 self.commitId = commitId
                 self.parent = parent
                 self.message = message
-
-                fo = open(".gitpy/dump/addinfo.txt", "r+")
-                change = fo.read()
-                change = change.splitlines()
-
-                
-
-		if not os.path.exists('.gitpy/' + str(self.commitId)):
-                    os.makedirs(".gitpy/" + str(self.commitId))
-
-                for i in change:
-                        if i in os.listdir(os.getcwd()):
-                                copyfile(os.getcwd()+ "/" + i, os.getcwd()+ "/.gitpy/" + str(self.commitId) + "/" + i)
-
                 
 class Git(object):
 
@@ -96,6 +82,7 @@ elif argument == "add":
                         for untracked in files_in_cwd: 
                                 if not os.path.isdir(os.getcwd()+ "/" + untracked) and untracked!="test.py":
                                         if untracked not in files_in_gitpy:
+                                                print untracked
                                                 fo.write(untracked + "\n")
 
 elif argument == "commit":
@@ -110,7 +97,26 @@ elif argument == "commit":
                 print "Provide a message!"
         else:
                 repo.commit(specific)
-        
+
+                fo = open(".gitpy/dump/addinfo.txt", "r+")
+                change = fo.read()
+                fo.close()
+                
+                change = change.splitlines()
+
+                if change:
+                        if not os.path.exists('.gitpy/' + str(repo.HEAD.commitId)):
+                                os.makedirs(".gitpy/" + str(repo.HEAD.commitId))
+
+                        for i in change:
+                                if i in os.listdir(os.getcwd()):
+                                        copyfile(os.getcwd()+ "/" + i, os.getcwd()+ "/.gitpy/" + str(repo.HEAD.commitId) + "/" + i)
+
+                        fo = open(".gitpy/dump/addinfo.txt", 'w').close()
+                else:
+                        print "Cannot commit before adding"
+                
+                
         fo = open(".gitpy/dump/dump.txt", "wb")
         pickle.dump(repo,fo)
         fo.close()
